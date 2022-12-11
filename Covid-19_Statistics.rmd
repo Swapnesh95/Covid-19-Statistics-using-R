@@ -1,0 +1,133 @@
+---
+title: ''
+output:
+ html_document:
+    css: bootstrap.css
+---
+
+
+<style type="text/css">
+
+body, td {
+   font-size: 16px;
+   
+}
+code.r{
+  font-size: 15px;
+  
+}
+pre {
+  font-size: 15px
+}
+</style>
+
+---
+
+<BR>
+<BR>
+<HTML>
+<HEAD>
+<BODY>
+<CENTER>
+![](E:\\A M.S in Informatics - Northeastern\\Analytics\\Healthcare Pharma Data and Apps\\Assingment and Discussion 1\\NEU-logo.png)
+<FONT SIZE=5, COLOR="#B57F0A">
+<BR> <B> ALY6150 - Healthcare Analytics </B>
+<BR> <B> Assignment 1 </B>
+<BR> Submitted by - SWAPNESH TIWARI
+<BR> Submitted to - Prof. Roy Wada 
+<BR> NUID - 002956398
+<BR> Massachusetts COVID - 19 Statistics
+<BR> Date :  `r format(Sys.time(), "%d %B, %Y")`
+</FONT>
+</CENTER>
+</HEAD>
+<BR>
+<BR>
+<BR>
+
+---
+
+---
+
+
+```{r  warning=FALSE, message=FALSE}
+
+#Adding libraries to report
+
+library(readxl)
+library(writexl)
+library(magrittr)
+library(ggplot2)
+library(sqldf)
+
+#Path to Dataset
+
+
+
+COVIDDF <- read_excel("E:/A M.S in Informatics - Northeastern/Analytics/Healthcare Pharma Data and Apps/Assingment and Discussion 1/DataSet/massachusetts-history.xlsx")
+
+#to get number of rows and columns in dataset
+ncol(COVIDDF)
+nrow(COVIDDF)
+```
+
+
+---
+
+---
+
+```{r warning=F}
+
+#Summary Statistics table
+
+Table = COVIDDF%>%
+  psych::describe(skew = FALSE)%>% #Used Psych code to describe the data.
+  t()%>% #used transpose to create a good orientation of table.
+  round(2) #rounded to two decimals
+
+
+Table = as.data.frame(Table)
+#Table = tibble::rownames_to_column(Table, "Variables")
+
+
+write_xlsx(Table,"filename2.xlsx")
+
+knitr::kable(Table, caption = " Descriptive statistics of COVID - 19 in Massachusetts")%>% 
+  kableExtra::kable_classic_2("striped", "hover")
+
+```
+
+
+---
+
+---
+
+
+
+```{r warning=FALSE}
+
+#Fetch moth from date.
+
+COVIDDF$month = format(as.Date(COVIDDF$date, format="%d/%m/%Y"),"%m")
+
+
+#Selecting variables through SQL
+
+NewVariables3 = sqldf("SELECT  death, deathConfirmed from COVIDDF")
+
+#Plot in respect to month and increase in death
+
+COVIDDF %>%
+  ggplot(aes(x =  deathIncrease, y = month, fill = deathIncrease)) +
+  geom_line( color="#B0361B", size=2, alpha=0.9, linetype=1) + 
+  ggtitle("Increase in death due to COVID - 19 every month in 2021")
+
+
+#Three Dimensional plot to see number of deaths in respect to months
+ggplot(data=COVIDDF,
+       aes(x = death, y = recovered/100 ))+
+  geom_point(aes(color = state),
+             shape=1)+theme_linedraw()
+
+```
+
